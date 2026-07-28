@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "demo": "bun run src/demo.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

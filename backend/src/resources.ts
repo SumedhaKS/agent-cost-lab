@@ -35,69 +35,17 @@ any circumstances. Damaged-on-arrival claims for these categories should be
 escalated directly rather than processed as a standard refund.
 `;
 
-export const fakeHistory = [
-  {
-    role: "user",
-    parts: [{ text: "Hi, my order #ORD-12345 was supposed to arrive 5 days ago and I still don't have it. I'd like a refund." }],
-  },
-  {
-    role: "model",
-    parts: [{ functionCall: { name: "get_order_details", args: { order_id: "ORD-12345" } } }],
-  },
-  {
-    role: "user",
-    parts: [{
-      functionResponse: {
-        name: "get_order_details",
-        response: {
-          status: "in_transit",
-          expected_delivery: "2026-07-20",
-          days_late: 6,
-          items: ["Wireless Headphones - Black"],
-          order_total: 89.99,
-        },
-      },
-    }],
-  },
-  {
-    role: "model",
-    parts: [{ functionCall: { name: "search_policy_kb", args: { query: "late delivery refund eligibility" } } }],
-  },
-  {
-    role: "user",
-    parts: [{
-      functionResponse: {
-        name: "search_policy_kb",
-        response: {
-          result: `Non-Returnable Items
-Perishable goods, gift cards, and digital downloads are non-returnable under
-any circumstances. Damaged-on-arrival claims for these categories should be
-escalated directly rather than processed as a standard refund.`,
-        },
-      },
-    }],
-  },
-];
-
-export const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
-  // 1. dot product: loop through both arrays, sum a[i] * b[i]
-  // 2. magnitude of a: sqrt of sum of a[i]^2
-  // 3. magnitude of b: same, for b
-  // 4. return dot / (magA * magB)
-  if (vecA.length !== vecB.length) {
-    return 0
-  }
-
-  const dotProduct = vecA.reduce((sum, a, i) => sum + a * (vecB[i] ?? 0), 0);
-  const magnitudeA = Math.hypot(...vecA);
-  const magnitudeB = Math.hypot(...vecB);
-
-  if (magnitudeA === 0 || magnitudeB === 0) {
-    return 0;
-  }
-
-  return dotProduct / (magnitudeA * magnitudeB)
+// resources.ts — add this, keep POLICY_TEXT and policySections as they are
+export function buildFakeHistory(policyContent: string) {
+  return [
+    { role: "user", parts: [{ text: "Hi, my order #ORD-48213 was supposed to arrive 5 days ago and I still don't have it. I'd like a refund." }] },
+    { role: "model", parts: [{ functionCall: { name: "get_order_details", args: { order_id: "ORD-48213" } } }] },
+    { role: "user", parts: [{ functionResponse: { name: "get_order_details", response: { status: "in_transit", expected_delivery: "2026-07-20", days_late: 6, items: ["Wireless Headphones - Black"], order_total: 89.99 } } }] },
+    { role: "model", parts: [{ functionCall: { name: "search_policy_kb", args: { query: "late delivery refund eligibility" } } }] },
+    { role: "user", parts: [{ functionResponse: { name: "search_policy_kb", response: { result: policyContent } } }] },
+  ];
 }
+
 
 export const policySections = [
   `Standard Return Window
@@ -130,3 +78,22 @@ any circumstances. Damaged-on-arrival claims for these categories should be
 escalated directly rather than processed as a standard refund.`
 ]
 
+export const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
+  // 1. dot product: loop through both arrays, sum a[i] * b[i]
+  // 2. magnitude of a: sqrt of sum of a[i]^2
+  // 3. magnitude of b: same, for b
+  // 4. return dot / (magA * magB)
+  if (vecA.length !== vecB.length) {
+    return 0
+  }
+
+  const dotProduct = vecA.reduce((sum, a, i) => sum + a * (vecB[i] ?? 0), 0);
+  const magnitudeA = Math.hypot(...vecA);
+  const magnitudeB = Math.hypot(...vecB);
+
+  if (magnitudeA === 0 || magnitudeB === 0) {
+    return 0;
+  }
+
+  return dotProduct / (magnitudeA * magnitudeB)
+}
