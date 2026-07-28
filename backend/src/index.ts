@@ -1,6 +1,6 @@
 import "dotenv/config"
 import { GoogleGenAI } from "@google/genai";
-import { cosineSimilarity, fakeHistory, POLICY_TEXT, policySections, systemPrompt } from "./resources";
+import { cosineSimilarity, fakeHistory, policySections, systemPrompt } from "./resources";
 import { localTools } from "./tools"
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -29,32 +29,6 @@ async function main() {
 
 main();
 
-async function optimizedFlow() {
-    // 1) embed the policy.  2) embed the query. 3) Run similarity check. 4) return best match.
-
-    const policyEmbedding = await ai.models.embedContent({
-        model: "gemini-embedding-2",
-        contents: [POLICY_TEXT],
-    });
-
-    const queryEmbedding = await ai.models.embedContent({
-        model: "gemini-embedding-2",
-        contents: ["late delivery refund eligibility"],
-    });
-
-    const policyVec = policyEmbedding.embeddings?.[0]?.values;
-    const queryVec = queryEmbedding.embeddings?.[0]?.values;
-
-    if (!policyVec || !queryVec) {
-        throw new Error("Failed to get embeddings");
-    }
-
-    const similarity = cosineSimilarity(policyVec, queryVec);
-    console.log(similarity);
-
-}
-
-// optimizedFlow()
 
 export async function searchPolicyKB(query: string): Promise<string> {
     // console.log(policySections.length, '\n');
@@ -80,7 +54,7 @@ export async function searchPolicyKB(query: string): Promise<string> {
     let highestIndex = 0;
 
     sectionEmbeddings.embeddings?.forEach((section, i) => {
-        let x = cosineSimilarity(queryVec, (section.values ?? []))
+        const x = cosineSimilarity(queryVec, (section.values ?? []))
         // console.log(`Section ${i}: score = ${x}`)
         if (x > highest) {
             highest = x;
@@ -92,3 +66,4 @@ export async function searchPolicyKB(query: string): Promise<string> {
 }
 
 // console.log(await searchPolicyKB("can I return a gift card"))
+
